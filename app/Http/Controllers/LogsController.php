@@ -2,10 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\MyTestMail;
+use App\Models\Log;
+use App\Models\Task;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class LogsController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
     /**
      * Display a listing of the resource.
      *
@@ -21,9 +31,12 @@ class LogsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create($task_id)
     {
-        //
+        $user_log = Auth::user();
+        return view('logs.create')
+        ->with('user_log',$user_log)
+        ->with('task_id',$task_id);
     }
 
     /**
@@ -34,7 +47,21 @@ class LogsController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validate = $this->validate($request, [
+            'comment' => ['required', 'string'],
+            'task_id' => ['required'],
+        ]);
+        $log = Log::create([
+            'task_id' => $request->task_id,
+            'comment' => $request->comment,
+            'status' => 1,
+            'created_at' => Carbon::now(),
+        ]);
+       $email_user = Auth::user()->email;
+        Mail::to($email_user)->send(new MyTestMail());
+
+        $message = "Log created  and email sent successfully";
+        return redirect()->route('tasks.index')->with('message',$message);
     }
 
     /**
@@ -45,40 +72,11 @@ class LogsController extends Controller
      */
     public function show($id)
     {
-        //
+        $task = Task::findOrFail($id);
+        $user_log = Auth::user();
+        return view('logs.show')
+        ->with('logs',$task->logs)
+        ->with('user_log',$user_log);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
 }

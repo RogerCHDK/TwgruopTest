@@ -10,4 +10,5 @@ class Log extends Model
     use HasFactory; 
     protected $table= 'logs'; 
     protected $fillable = ['comment','created_at','task_id','status'];
+    public $timestamps = false; 
 }

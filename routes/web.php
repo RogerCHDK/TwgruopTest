@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\LogsController;
+use App\Http\Controllers\TasksController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,5 +16,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
-});
+    return redirect()->route('tasks.index');
+})->name('inicio');
+
+Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
+    return view('dashboard');
+})->name('dashboard');
+
+Route::resource('tasks', TasksController::class);
+Route::resource('logs', LogsController::class);
+
+Route::get('log-create/{id}', [LogsController::class, 'create'])->name('log.create');
